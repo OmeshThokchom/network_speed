@@ -114,18 +114,18 @@ class TaskbarOverlay(QWidget):
     def __init__(self):
         super().__init__()
         self.setup_ui()
-        self.snap_to_taskbar()
+        self.snap_to_position()
         self.old_pos = None
         
         # Auto-snap on screen change
         self.screen = QApplication.primaryScreen()
         if self.screen:
-            self.screen.geometryChanged.connect(self.snap_to_taskbar)
-            self.screen.availableGeometryChanged.connect(self.snap_to_taskbar)
+            self.screen.geometryChanged.connect(self.snap_to_position)
+            self.screen.availableGeometryChanged.connect(self.snap_to_position)
             
         # Backup timer to ensure positioning (every 5s)
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.snap_to_taskbar)
+        self.timer.timeout.connect(self.snap_to_position)
         self.timer.start(5000)
         
     def setup_ui(self):
@@ -161,7 +161,7 @@ class TaskbarOverlay(QWidget):
         layout.addWidget(self.up_label)
         self.setLayout(layout)
         
-    def snap_to_taskbar(self):
+    def snap_to_position(self):
         """Snap to the taskbar area (bottom right usually)"""
         screen = QApplication.primaryScreen()
         if screen:
@@ -201,6 +201,9 @@ class TaskbarOverlay(QWidget):
             
         self.down_label.setText(f"↓ {format_speed(down)}")
         self.up_label.setText(f"↑ {format_speed(up)}")
+        
+        # Force window to top (Z-order fix)
+        self.raise_()
 
     # Draggable logic (in case user wants to fine-tune position)
     def mousePressEvent(self, event):
@@ -349,7 +352,7 @@ class NetworkMonitorTray:
         else:
             self.overlay.show()
             self.toggle_overlay_action.setText("Hide Overlay")
-            self.overlay.snap_to_taskbar()
+            self.overlay.snap_to_position()
             
     def is_startup_enabled(self):
         """Check if app is in startup registry"""
